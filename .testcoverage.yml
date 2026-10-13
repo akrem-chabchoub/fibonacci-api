@@ -1,0 +1,11 @@
+profile: _out/coverage.out
+local-prefix: github.com/akrem-chabchoub/fibonacci-api
+threshold:
+  file: 0
+  package: 0
+  total: 0
+override:
+  - path: ^internal/fibonacci
+    threshold: 80
+  - path: ^internal/api
+    threshold: 80

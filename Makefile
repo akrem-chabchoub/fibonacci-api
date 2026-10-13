@@ -2,7 +2,7 @@ ARTIFACTS ?= _out
 CGO_ENABLED ?= 0
 GO ?= go
 
-.PHONY: binary test test-race lint
+.PHONY: binary test test-race test-cover test-cover-html lint
 
 binary:
 	@mkdir -p $(ARTIFACTS)
@@ -16,3 +16,11 @@ test-race:
 
 lint:
 	golangci-lint run ./...
+
+test-cover:
+	@mkdir -p $(ARTIFACTS)
+	$(GO) test -coverprofile=$(ARTIFACTS)/coverage.out ./...
+	$(GO) tool cover -func=$(ARTIFACTS)/coverage.out
+
+test-cover-html: test-cover
+	$(GO) tool cover -html=$(ARTIFACTS)/coverage.out -o $(ARTIFACTS)/coverage.html

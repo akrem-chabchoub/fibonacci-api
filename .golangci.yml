@@ -1,0 +1,37 @@
+version: "2"
+
+run:
+  tests: true
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - misspell
+    - revive
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+  settings:
+    revive:
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: error-return
+        - name: error-strings
+        - name: exported
+        - name: indent-error-flow
+        - name: unexported-return
+        - name: var-naming
+
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
