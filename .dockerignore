@@ -1,0 +1,6 @@
+.git
+_out
+.idea
+.DS_Store
+*.md
+.github

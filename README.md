@@ -8,7 +8,13 @@ HTTP service that returns the first n Fibonacci numbers.
 make binary
 ```
 
-The binary lands in `_out/fibonacci-api`.
+
+## docker
+
+```sh
+make docker-image
+docker compose up --build
+```
 
 ## test
 

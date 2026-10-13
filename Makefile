@@ -1,8 +1,9 @@
 ARTIFACTS ?= _out
 CGO_ENABLED ?= 0
 GO ?= go
+IMAGE ?= fibonacci-api:local
 
-.PHONY: binary test test-race test-cover test-cover-html lint
+.PHONY: binary test test-race test-cover test-cover-html lint docker-image
 
 binary:
 	@mkdir -p $(ARTIFACTS)
@@ -24,3 +25,6 @@ test-cover:
 
 test-cover-html: test-cover
 	$(GO) tool cover -html=$(ARTIFACTS)/coverage.out -o $(ARTIFACTS)/coverage.html
+
+docker-image:
+	docker build -t $(IMAGE) .

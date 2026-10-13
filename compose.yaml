@@ -1,0 +1,6 @@
+services:
+  api:
+    build: .
+    image: fibonacci-api:local
+    ports:
+      - "8080:8080"
