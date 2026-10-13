@@ -5,7 +5,9 @@ threshold:
   package: 0
   total: 0
 override:
-  - path: ^internal/fibonacci
+  - path: ^internal/service
     threshold: 80
-  - path: ^internal/api
+  - path: ^internal/handler
+    threshold: 80
+  - path: ^internal/server
     threshold: 80
