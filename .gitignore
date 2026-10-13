@@ -1,0 +1,7 @@
+_out/
+*.exe
+*.test
+*.out
+coverage.out
+.idea/
+.DS_Store
