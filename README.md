@@ -59,15 +59,6 @@ The spec in `api/openapi.yaml` is the source of truth. `make generate` refreshes
 
 `/healthz` and `/readyz` both mean “this process can take HTTP.” They are separate paths so probes can diverge later (for example ready false during drain).
 
-## what we skipped
-
-- cobra — two flags, stdlib `flag` is enough
-- HEAD — the body is tiny; GET is the contract
-- Redis, a worker pool, a second algorithm — one table in memory
-- Helm / Grafana — not needed to run the binary
-
-To raise `MaxN` you would need a wider integer type and a `/v2` (or a string encoding). uint64 is full.
-
 ## build
 
 ```sh
