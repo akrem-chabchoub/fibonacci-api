@@ -3,11 +3,15 @@ CGO_ENABLED ?= 0
 GO ?= go
 IMAGE ?= fibonacci-api:local
 
-.PHONY: binary test test-integration test-race test-cover test-cover-html lint docker-image generate
+.PHONY: binary dev test test-integration test-race test-cover test-cover-html lint docker-image generate
 
 binary:
 	@mkdir -p $(ARTIFACTS)
 	CGO_ENABLED=$(CGO_ENABLED) $(GO) build -o $(ARTIFACTS)/fibonacci-api ./cmd/fibonacci-api
+
+dev:
+	@command -v air >/dev/null || { echo "go install github.com/air-verse/air@v1.67.4"; exit 1; }
+	air
 
 test:
 	$(GO) test ./...

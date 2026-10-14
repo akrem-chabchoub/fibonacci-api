@@ -1,0 +1,17 @@
+root = "."
+tmp_dir = "_out/air"
+
+[build]
+  args_bin = ["--listen", ":8080"]
+  bin = "./_out/air/fibonacci-api"
+  cmd = "go build -o ./_out/air/fibonacci-api ./cmd/fibonacci-api"
+  delay = 500
+  exclude_dir = ["_out"]
+  exclude_regex = ["_test.go"]
+  include_ext = ["go", "yaml", "html"]
+  kill_delay = "10s"
+  send_interrupt = true
+  stop_on_error = true
+
+[misc]
+  clean_on_exit = true
