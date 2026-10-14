@@ -3,7 +3,7 @@ CGO_ENABLED ?= 0
 GO ?= go
 IMAGE ?= fibonacci-api:local
 
-.PHONY: binary test test-race test-cover test-cover-html lint docker-image generate
+.PHONY: binary test test-integration test-race test-cover test-cover-html lint docker-image generate
 
 binary:
 	@mkdir -p $(ARTIFACTS)
@@ -11,6 +11,9 @@ binary:
 
 test:
 	$(GO) test ./...
+
+test-integration:
+	$(GO) test ./internal/server -count=1
 
 test-race:
 	CGO_ENABLED=1 $(GO) test -race ./...
