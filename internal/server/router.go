@@ -5,6 +5,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
+	"github.com/akrem-chabchoub/fibonacci-api/api"
 	"github.com/akrem-chabchoub/fibonacci-api/internal/handler"
 )
 
@@ -14,6 +15,8 @@ func newMux() http.Handler {
 	router.Handler(http.MethodGet, "/v1/fibonacci", fib)
 	router.Handler(http.MethodGet, "/healthz", http.HandlerFunc(ready))
 	router.Handler(http.MethodGet, "/readyz", http.HandlerFunc(ready))
+	router.Handler(http.MethodGet, "/openapi.yaml", http.HandlerFunc(api.ServeOpenAPI))
+	router.Handler(http.MethodGet, "/docs", http.HandlerFunc(api.ServeDocs))
 
 	return withCORS(router)
 }

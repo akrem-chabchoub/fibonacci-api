@@ -12,9 +12,6 @@ import (
 const MaxN = 94
 
 const (
-	CodeBadN    = "invalid_argument"
-	CodeNTooBig = "too_large"
-
 	MsgBadN    = "n must be a non-negative integer"
 	MsgNTooBig = "n exceeds maximum"
 )

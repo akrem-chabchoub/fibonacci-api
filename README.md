@@ -13,7 +13,10 @@ Ctrl+C (or SIGTERM) finishes in-flight requests, then exits. Default shutdown wa
 
 ```sh
 curl 'http://127.0.0.1:8080/v1/fibonacci?n=5'
+# contract: http://127.0.0.1:8080/docs  and  /openapi.yaml
 ```
+
+`make generate` refreshes `api/types.gen.go` from `api/openapi.yaml`.
 
 ## docker
 

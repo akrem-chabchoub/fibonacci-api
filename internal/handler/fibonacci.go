@@ -6,7 +6,9 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
+	"github.com/akrem-chabchoub/fibonacci-api/api"
 	"github.com/akrem-chabchoub/fibonacci-api/internal/service"
 )
 
@@ -15,27 +17,17 @@ const contentTypeJSON = "application/json"
 // Fibonacci serves GET /v1/fibonacci.
 type Fibonacci struct{}
 
-type apiError struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
-type limits struct {
-	MinN int `json:"min_n"`
-	MaxN int `json:"max_n"`
-}
-
 // ServeHTTP handles the Fibonacci HTTP API.
 func (h Fibonacci) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", "GET")
-		writeError(w, http.StatusMethodNotAllowed, service.CodeBadN, "method not allowed")
+		writeError(w, http.StatusMethodNotAllowed, api.InvalidArgument, "method not allowed")
 
 		return
 	}
 
 	if !r.URL.Query().Has("n") {
-		writeJSON(w, http.StatusOK, limits{MinN: 0, MaxN: service.MaxN})
+		writeJSON(w, http.StatusOK, api.Limits{MinN: 0, MaxN: service.MaxN})
 
 		return
 	}
@@ -54,23 +46,49 @@ func (h Fibonacci) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	etag := strconv.Quote("n=" + strconv.Itoa(n))
+	w.Header().Set("ETag", etag)
+
+	if sameETag(r.Header.Get("If-None-Match"), etag) {
+		w.WriteHeader(http.StatusNotModified)
+
+		return
+	}
+
 	w.Header().Set("Content-Type", contentTypeJSON)
-	w.Header().Set("ETag", strconv.Quote("n="+strconv.Itoa(n)))
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(body)
+}
+
+func sameETag(ifNoneMatch, etag string) bool {
+	if ifNoneMatch == "" {
+		return false
+	}
+
+	if ifNoneMatch == "*" {
+		return true
+	}
+
+	for _, candidate := range strings.Split(ifNoneMatch, ",") {
+		if strings.TrimSpace(candidate) == etag {
+			return true
+		}
+	}
+
+	return false
 }
 
 func writeServiceError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, service.ErrNTooBig):
-		writeError(w, http.StatusBadRequest, service.CodeNTooBig, service.MsgNTooBig)
+		writeError(w, http.StatusBadRequest, api.TooLarge, service.MsgNTooBig)
 	default:
-		writeError(w, http.StatusBadRequest, service.CodeBadN, service.MsgBadN)
+		writeError(w, http.StatusBadRequest, api.InvalidArgument, service.MsgBadN)
 	}
 }
 
-func writeError(w http.ResponseWriter, status int, code, message string) {
-	writeJSON(w, status, apiError{Code: code, Message: message})
+func writeError(w http.ResponseWriter, status int, code api.ErrorCode, message string) {
+	writeJSON(w, status, api.Error{Code: code, Message: message})
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

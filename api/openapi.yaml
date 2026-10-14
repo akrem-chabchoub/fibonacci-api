@@ -1,0 +1,126 @@
+openapi: 3.0.3
+info:
+  title: fibonacci-api
+  version: 1.0.0
+  description: |
+    Returns the first n Fibonacci numbers as a JSON array.
+    n is a count, not an index. n=5 is [0,1,1,2,3].
+    Max n is 94 because F(93) is the last Fibonacci that fits in uint64.
+    Values from F(78) are larger than JavaScript Number can hold exactly.
+servers:
+  - url: /
+paths:
+  /v1/fibonacci:
+    get:
+      operationId: getFibonacci
+      summary: first n Fibonacci numbers
+      parameters:
+        - name: n
+          in: query
+          required: false
+          description: how many numbers to return. omit to see min_n and max_n.
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 94
+        - name: If-None-Match
+          in: header
+          required: false
+          description: send a previous ETag to get 304 when the sequence is unchanged.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: sequence when n is set, otherwise min_n and max_n
+          headers:
+            ETag:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Sequence"
+                  - $ref: "#/components/schemas/Limits"
+        "304":
+          description: If-None-Match still matches
+          headers:
+            ETag:
+              schema:
+                type: string
+        "400":
+          description: n is missing a value, not a plain integer, or above 94
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "405":
+          description: only GET is allowed
+          headers:
+            Allow:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /healthz:
+    get:
+      operationId: getHealthz
+      summary: process is up
+      responses:
+        "200":
+          description: ok
+  /readyz:
+    get:
+      operationId: getReadyz
+      summary: ready for traffic
+      responses:
+        "200":
+          description: ok
+  /openapi.yaml:
+    get:
+      operationId: getOpenAPI
+      summary: this spec
+      responses:
+        "200":
+          description: OpenAPI document
+          content:
+            application/yaml:
+              schema:
+                type: string
+  /docs:
+    get:
+      operationId: getDocs
+      summary: swagger ui
+      responses:
+        "200":
+          description: html
+          content:
+            text/html:
+              schema:
+                type: string
+components:
+  schemas:
+    Sequence:
+      type: array
+      items:
+        type: integer
+        minimum: 0
+    Limits:
+      type: object
+      required: [min_n, max_n]
+      properties:
+        min_n:
+          type: integer
+        max_n:
+          type: integer
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [invalid_argument, too_large]
+        message:
+          type: string

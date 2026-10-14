@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"net/http"
@@ -57,6 +58,35 @@ func TestRunServesFibonacciAndShutsDown(t *testing.T) {
 
 	if health.StatusCode != http.StatusOK {
 		t.Fatalf("healthz status = %d", health.StatusCode)
+	}
+
+	spec, err := http.Get(base + "/openapi.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	specBody, err := io.ReadAll(spec.Body)
+	spec.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if spec.StatusCode != http.StatusOK {
+		t.Fatalf("openapi status = %d", spec.StatusCode)
+	}
+
+	if !bytes.Contains(specBody, []byte("/v1/fibonacci")) {
+		t.Fatal("openapi.yaml missing /v1/fibonacci")
+	}
+
+	docs, err := http.Get(base + "/docs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	docs.Body.Close()
+
+	if docs.StatusCode != http.StatusOK {
+		t.Fatalf("docs status = %d", docs.StatusCode)
 	}
 
 	cancel()

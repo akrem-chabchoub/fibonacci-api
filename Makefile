@@ -3,7 +3,7 @@ CGO_ENABLED ?= 0
 GO ?= go
 IMAGE ?= fibonacci-api:local
 
-.PHONY: binary test test-race test-cover test-cover-html lint docker-image
+.PHONY: binary test test-race test-cover test-cover-html lint docker-image generate
 
 binary:
 	@mkdir -p $(ARTIFACTS)
@@ -28,3 +28,6 @@ test-cover-html: test-cover
 
 docker-image:
 	docker build -t $(IMAGE) .
+
+generate:
+	$(GO) generate ./api/
