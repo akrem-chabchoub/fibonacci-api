@@ -30,13 +30,9 @@ flowchart TB
 - `internal/server` — listen, timeouts, graceful shutdown, routes
 - `internal/handler` — HTTP only: parse query, status codes
 - `internal/service` — parse `n`, table of F(0)..F(999)
-- `api` — hand-written `openapi.yaml`, generated types, `/docs`
-
-Math never imports `net/http`. HTTP never recomputes Fibonacci.
+- `api` — `openapi.yaml`, generated types, `/docs`
 
 ## contract
-
-v1 happy path is a raw JSON array. Do not wrap it later. A breaking change is `/v2`, not a quieter v1.
 
 Errors are always `{"code","message"}`:
 
