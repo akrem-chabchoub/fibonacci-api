@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/akrem-chabchoub/fibonacci-api/internal/service"
 )
@@ -55,36 +53,9 @@ func (h Fibonacci) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	etag := strconv.Quote("n=" + strconv.Itoa(n))
-	w.Header().Set("ETag", etag)
-
-	if sameETag(r.Header.Get("If-None-Match"), etag) {
-		w.WriteHeader(http.StatusNotModified)
-
-		return
-	}
-
 	w.Header().Set("Content-Type", contentTypeJSON)
 	w.WriteHeader(http.StatusOK)
 	_ = service.WriteJSON(r.Context(), w, n)
-}
-
-func sameETag(ifNoneMatch, etag string) bool {
-	if ifNoneMatch == "" {
-		return false
-	}
-
-	if ifNoneMatch == "*" {
-		return true
-	}
-
-	for _, candidate := range strings.Split(ifNoneMatch, ",") {
-		if strings.TrimSpace(candidate) == etag {
-			return true
-		}
-	}
-
-	return false
 }
 
 func writeServiceError(w http.ResponseWriter, err error) {

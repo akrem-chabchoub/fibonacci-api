@@ -28,7 +28,7 @@ flowchart TB
 
 - `cmd/fibonacci-api` — flags, logger, signals, then `server.Run`
 - `internal/server` — listen, timeouts, graceful shutdown, routes
-- `internal/handler` — HTTP only: parse query, ETag, status codes
+- `internal/handler` — HTTP only: parse query, status codes
 - `internal/service` — parse `n`, table of F(0)..F(999)
 - `api` — hand-written `openapi.yaml`, generated types, `/docs`
 
@@ -45,7 +45,7 @@ Errors are always `{"code","message"}`:
 - `method_not_allowed` — not GET
 - `not_found` — unknown path
 
-Same `n` always yields the same bytes. `ETag` is `"n="+n`. Send that value back as `If-None-Match` to get `304` and no body.
+Same `n` always yields the same bytes.
 
 Omit `n` to get `{"min_n":0,"max_n":1000}`.
 

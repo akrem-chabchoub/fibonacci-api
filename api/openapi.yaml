@@ -22,31 +22,15 @@ paths:
             type: integer
             minimum: 0
             maximum: 1000
-        - name: If-None-Match
-          in: header
-          required: false
-          description: send a previous ETag to get 304 when the sequence is unchanged.
-          schema:
-            type: string
       responses:
         "200":
           description: sequence when n is set, otherwise min_n and max_n
-          headers:
-            ETag:
-              schema:
-                type: string
           content:
             application/json:
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/Sequence"
                   - $ref: "#/components/schemas/Limits"
-        "304":
-          description: If-None-Match still matches
-          headers:
-            ETag:
-              schema:
-                type: string
         "400":
           description: n is missing a value, not a plain integer, or above 1000
           content:
