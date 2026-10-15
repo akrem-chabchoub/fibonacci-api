@@ -27,19 +27,12 @@ func (h Fibonacci) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !r.URL.Query().Has("n") {
-		writeJSON(w, http.StatusOK, api.Limits{MinN: 0, MaxN: service.MaxN})
+		writeJSON(w, http.StatusOK, api.Limits{MinN: 0})
 
 		return
 	}
 
 	n, err := service.ParseN(r.URL.Query().Get("n"))
-	if err != nil {
-		writeServiceError(w, err)
-
-		return
-	}
-
-	body, err := service.JSON(n)
 	if err != nil {
 		writeServiceError(w, err)
 
@@ -57,7 +50,7 @@ func (h Fibonacci) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", contentTypeJSON)
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(body)
+	_ = service.WriteJSON(r.Context(), w, n)
 }
 
 func sameETag(ifNoneMatch, etag string) bool {

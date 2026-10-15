@@ -3,9 +3,9 @@ info:
   title: fibonacci-api
   version: 1.0.0
   description: |
-    Returns the first n Fibonacci numbers as a JSON array.
+    Returns the first n Fibonacci numbers as a JSON array of numbers.
     n is a count, not an index. n=5 is [0,1,1,2,3].
-    Max n is 94 because F(93) is the last Fibonacci that fits in uint64.
+    There is no cap on Fibonacci magnitude. n must fit in a platform int.
     Values from F(78) are larger than JavaScript Number can hold exactly.
 servers:
   - url: /
@@ -18,11 +18,10 @@ paths:
         - name: n
           in: query
           required: false
-          description: how many numbers to return. omit to see min_n and max_n.
+          description: how many numbers to return. omit to see min_n.
           schema:
             type: integer
             minimum: 0
-            maximum: 94
         - name: If-None-Match
           in: header
           required: false
@@ -31,7 +30,7 @@ paths:
             type: string
       responses:
         "200":
-          description: sequence when n is set, otherwise min_n and max_n
+          description: sequence when n is set, otherwise min_n
           headers:
             ETag:
               schema:
@@ -49,7 +48,7 @@ paths:
               schema:
                 type: string
         "400":
-          description: n is missing a value, not a plain integer, or above 94
+          description: n is missing a value, not a plain integer, or does not fit in int
           content:
             application/json:
               schema:
@@ -109,11 +108,9 @@ components:
         minimum: 0
     Limits:
       type: object
-      required: [min_n, max_n]
+      required: [min_n]
       properties:
         min_n:
-          type: integer
-        max_n:
           type: integer
     Error:
       type: object

@@ -69,8 +69,15 @@ func TestFibonacci(t *testing.T) {
 		{
 			name:       "too large",
 			method:     http.MethodGet,
-			target:     "/v1/fibonacci?n=95",
+			target:     "/v1/fibonacci?n=18446744073709551616",
 			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "past uint64",
+			method:     http.MethodGet,
+			target:     "/v1/fibonacci?n=95",
+			wantStatus: http.StatusOK,
+			wantETag:   `"n=95"`,
 		},
 		{
 			name:       "method not allowed",
@@ -130,14 +137,24 @@ func TestFibonacci(t *testing.T) {
 
 			if tc.name == "limits" {
 				var got struct {
-					MinN int `json:"min_n"`
-					MaxN int `json:"max_n"`
+					MinN int  `json:"min_n"`
+					MaxN *int `json:"max_n"`
 				}
 				if err := json.Unmarshal(body, &got); err != nil {
 					t.Fatal(err)
 				}
-				if got.MinN != 0 || got.MaxN != 94 {
+				if got.MinN != 0 || got.MaxN != nil {
 					t.Fatalf("limits = %+v", got)
+				}
+			}
+
+			if tc.name == "past uint64" {
+				var seq []json.Number
+				if err := json.Unmarshal(body, &seq); err != nil {
+					t.Fatal(err)
+				}
+				if len(seq) != 95 || seq[94].String() != "19740274219868223167" {
+					t.Fatalf("past uint64 = len %d last %v", len(seq), seq)
 				}
 			}
 		})

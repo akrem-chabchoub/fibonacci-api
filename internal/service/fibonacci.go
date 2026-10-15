@@ -2,80 +2,65 @@
 package service
 
 import (
-	"encoding/json"
+	"context"
 	"errors"
-	"fmt"
+	"io"
+	"math/big"
 )
-
-// MaxN is the largest count whose values still fit in uint64.
-// The first n numbers are F(0)..F(n-1); F(93) is the last uint64 value, so n=94.
-const MaxN = 94
 
 const (
 	// MsgBadN is the client-facing text when n is not a plain count.
 	MsgBadN = "n must be a non-negative integer"
-	// MsgNTooBig is the client-facing text when n is above MaxN.
+	// MsgNTooBig is the client-facing text when n does not fit in int.
 	MsgNTooBig = "n exceeds maximum"
 )
 
 var (
 	// ErrBadN is returned when n cannot be parsed as a count.
 	ErrBadN = errors.New(MsgBadN)
-	// ErrNTooBig is returned when n is greater than MaxN.
+	// ErrNTooBig is returned when n does not fit in int.
 	ErrNTooBig = errors.New(MsgNTooBig)
 )
 
-var (
-	fibonacciValues [MaxN + 1]uint64
-	jsonByN         [MaxN + 1][]byte
-)
-
-func init() {
-	fibonacciValues[1] = 1
-	for i := 2; i <= MaxN; i++ {
-		fibonacciValues[i] = fibonacciValues[i-1] + fibonacciValues[i-2]
-	}
-
-	for n := 0; n <= MaxN; n++ {
-		body, err := json.Marshal(fibonacciValues[:n])
-		if err != nil {
-			panic(fmt.Sprintf("precompute json for n=%d: %v", n, err))
-		}
-
-		jsonByN[n] = body
-	}
-}
-
-// Sequence returns a copy of the first n Fibonacci numbers starting at 0.
-func Sequence(n int) ([]uint64, error) {
-	if err := checkN(n); err != nil {
-		return nil, err
-	}
-
-	out := make([]uint64, n)
-	copy(out, fibonacciValues[:n])
-
-	return out, nil
-}
-
-// JSON returns the precomputed JSON array for the first n numbers.
-// The returned slice must not be modified.
-func JSON(n int) ([]byte, error) {
-	if err := checkN(n); err != nil {
-		return nil, err
-	}
-
-	return jsonByN[n], nil
-}
-
-func checkN(n int) error {
+// WriteJSON writes the first n Fibonacci numbers as a JSON array of numbers.
+func WriteJSON(ctx context.Context, w io.Writer, n int) error {
 	if n < 0 {
 		return ErrBadN
 	}
 
-	if n > MaxN {
-		return ErrNTooBig
+	if err := ctx.Err(); err != nil {
+		return err
 	}
 
-	return nil
+	if _, err := io.WriteString(w, "["); err != nil {
+		return err
+	}
+
+	prev, curr := big.NewInt(0), big.NewInt(1)
+	next := new(big.Int)
+	digits := make([]byte, 0, 16)
+
+	for i := 0; i < n; i++ {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+
+		if i > 0 {
+			if _, err := io.WriteString(w, ","); err != nil {
+				return err
+			}
+		}
+
+		digits = prev.Append(digits[:0], 10)
+		if _, err := w.Write(digits); err != nil {
+			return err
+		}
+
+		next.Add(prev, curr)
+		prev, curr, next = curr, next, prev
+	}
+
+	_, err := io.WriteString(w, "]")
+
+	return err
 }

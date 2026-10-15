@@ -20,18 +20,5 @@ type ErrorCode string
 
 // Limits defines model for Limits.
 type Limits struct {
-	MaxN int `json:"max_n"`
 	MinN int `json:"min_n"`
-}
-
-// Sequence defines model for Sequence.
-type Sequence = []int
-
-// GetFibonacciParams defines parameters for GetFibonacci.
-type GetFibonacciParams struct {
-	// N how many numbers to return. omit to see min_n and max_n.
-	N *int `form:"n,omitempty" json:"n,omitempty"`
-
-	// IfNoneMatch send a previous ETag to get 304 when the sequence is unchanged.
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
 }

@@ -20,8 +20,8 @@ func FuzzParseN(f *testing.F) {
 			return
 		}
 
-		if n < 0 || n > MaxN {
-			t.Fatalf("ParseN(%q) = %d, want 0..%d", in, n, MaxN)
+		if n < 0 {
+			t.Fatalf("ParseN(%q) = %d, want >= 0", in, n)
 		}
 	})
 }

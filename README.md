@@ -4,7 +4,7 @@
 
 HTTP service that returns the first n Fibonacci numbers.
 
-`n` is a count, not an index: the body is F(0) through F(n-1). `GET /v1/fibonacci?n=5` returns `[0,1,1,2,3]`. Max `n` is 94 because F(93) is the last Fibonacci that fits in `uint64`.
+`n` is a count, not an index: the body is F(0) through F(n-1). `GET /v1/fibonacci?n=5` returns `[0,1,1,2,3]`. Fibonacci magnitude is unbounded (`math/big`). `n` itself must still fit in `int`.
 
 <div align="center">
 
@@ -16,7 +16,7 @@ flowchart TB
 
   mux --> handler[handler]
   handler --> service[service]
-  service --> json([precomputed JSON])
+  service --> json([big.Int numbers])
 
   mux -.-> health[healthz and readyz]
   mux -.-> docs[docs and openapi]
@@ -29,10 +29,10 @@ flowchart TB
 - `cmd/fibonacci-api` — flags, logger, signals, then `server.Run`
 - `internal/server` — listen, timeouts, graceful shutdown, routes
 - `internal/handler` — HTTP only: parse query, ETag, status codes
-- `internal/service` — parse `n`, precomputed table, cached JSON
+- `internal/service` — parse `n`, `math/big`, stream JSON numbers
 - `api` — hand-written `openapi.yaml`, generated types, `/docs`
 
-Math never imports `net/http`. HTTP never recomputes Fibonacci.
+Math never imports `net/http`. Each request computes the sequence. ETag still skips work on `304`.
 
 ## contract
 
@@ -41,15 +41,15 @@ v1 happy path is a raw JSON array. Do not wrap it later. A breaking change is `/
 Errors are always `{"code","message"}`:
 
 - `invalid_argument` — empty, negative, leading zeros, `+5`, floats, junk
-- `too_large` — above 94, or a number that does not fit in `int`
+- `too_large` — `n` does not fit in `int`
 
 Same `n` always yields the same bytes. `ETag` is `"n="+n`. Send that value back as `If-None-Match` to get `304` and no body.
 
-Omit `n` to get `{"min_n":0,"max_n":94}`.
+Omit `n` to get `{"min_n":0}`.
 
 CORS is `*` (no credentials). Methods: GET, OPTIONS.
 
-Numbers from F(78) are larger than JavaScript `Number` can store exactly. Clients that need the exact integer should use a big-int JSON parser, not `JSON.parse` in the browser.
+JSON numbers are exact decimals, but JavaScript `Number` loses integers from F(78). Clients that need the exact value should use a big-int JSON parser. A large `n` can still hit the 10s write timeout or run the process out of memory.
 
 The spec in `api/openapi.yaml` is the source of truth. `make generate` refreshes `api/types.gen.go`. Change the YAML first.
 
