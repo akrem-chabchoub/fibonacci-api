@@ -12,12 +12,16 @@ import (
 const MaxN = 94
 
 const (
-	MsgBadN    = "n must be a non-negative integer"
+	// MsgBadN is the client-facing text when n is not a plain count.
+	MsgBadN = "n must be a non-negative integer"
+	// MsgNTooBig is the client-facing text when n is above MaxN.
 	MsgNTooBig = "n exceeds maximum"
 )
 
 var (
-	ErrBadN    = errors.New(MsgBadN)
+	// ErrBadN is returned when n cannot be parsed as a count.
+	ErrBadN = errors.New(MsgBadN)
+	// ErrNTooBig is returned when n is greater than MaxN.
 	ErrNTooBig = errors.New(MsgNTooBig)
 )
 

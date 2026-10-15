@@ -37,7 +37,7 @@ func TestRunServesFibonacciAndShutsDown(t *testing.T) {
 	}
 
 	body, err := io.ReadAll(res.Body)
-	res.Body.Close()
+	_ = res.Body.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +54,7 @@ func TestRunServesFibonacciAndShutsDown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	health.Body.Close()
+	_ = health.Body.Close()
 
 	if health.StatusCode != http.StatusOK {
 		t.Fatalf("healthz status = %d", health.StatusCode)
@@ -66,7 +66,7 @@ func TestRunServesFibonacciAndShutsDown(t *testing.T) {
 	}
 
 	specBody, err := io.ReadAll(spec.Body)
-	spec.Body.Close()
+	_ = spec.Body.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +83,7 @@ func TestRunServesFibonacciAndShutsDown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	docs.Body.Close()
+	_ = docs.Body.Close()
 
 	if docs.StatusCode != http.StatusOK {
 		t.Fatalf("docs status = %d", docs.StatusCode)
