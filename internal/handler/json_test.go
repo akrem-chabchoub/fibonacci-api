@@ -25,3 +25,14 @@ func TestWriteError(t *testing.T) {
 		t.Fatalf("body = %s, want %s", rec.Body.String(), want)
 	}
 }
+
+func TestWriteJSONMarshalError(t *testing.T) {
+	t.Parallel()
+
+	rec := httptest.NewRecorder()
+	WriteJSON(rec, http.StatusOK, make(chan int))
+
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status = %d", rec.Code)
+	}
+}
