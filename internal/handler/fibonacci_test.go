@@ -59,18 +59,21 @@ func TestFibonacci(t *testing.T) {
 			method:     http.MethodGet,
 			target:     "/v1/fibonacci?n=",
 			wantStatus: http.StatusBadRequest,
+			wantBody:   `{"code":"invalid_argument","message":"n must be a non-negative integer"}`,
 		},
 		{
 			name:       "negative",
 			method:     http.MethodGet,
 			target:     "/v1/fibonacci?n=-1",
 			wantStatus: http.StatusBadRequest,
+			wantBody:   `{"code":"invalid_argument","message":"n must be a non-negative integer"}`,
 		},
 		{
 			name:       "too large",
 			method:     http.MethodGet,
-			target:     "/v1/fibonacci?n=18446744073709551616",
+			target:     "/v1/fibonacci?n=1001",
 			wantStatus: http.StatusBadRequest,
+			wantBody:   `{"code":"too_large","message":"n exceeds maximum"}`,
 		},
 		{
 			name:       "past uint64",
@@ -85,6 +88,7 @@ func TestFibonacci(t *testing.T) {
 			target:     "/v1/fibonacci?n=5",
 			wantStatus: http.StatusMethodNotAllowed,
 			wantAllow:  "GET",
+			wantBody:   `{"code":"method_not_allowed","message":"method not allowed"}`,
 		},
 		{
 			name:       "head not allowed",
@@ -92,6 +96,7 @@ func TestFibonacci(t *testing.T) {
 			target:     "/v1/fibonacci?n=5",
 			wantStatus: http.StatusMethodNotAllowed,
 			wantAllow:  "GET",
+			wantBody:   `{"code":"method_not_allowed","message":"method not allowed"}`,
 		},
 	}
 
@@ -137,13 +142,13 @@ func TestFibonacci(t *testing.T) {
 
 			if tc.name == "limits" {
 				var got struct {
-					MinN int  `json:"min_n"`
-					MaxN *int `json:"max_n"`
+					MinN int `json:"min_n"`
+					MaxN int `json:"max_n"`
 				}
 				if err := json.Unmarshal(body, &got); err != nil {
 					t.Fatal(err)
 				}
-				if got.MinN != 0 || got.MaxN != nil {
+				if got.MinN != 0 || got.MaxN != 1000 {
 					t.Fatalf("limits = %+v", got)
 				}
 			}

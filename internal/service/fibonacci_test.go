@@ -35,6 +35,7 @@ func TestParseN(t *testing.T) {
 		{name: "one", in: "1", want: 1},
 		{name: "five", in: "5", want: 5},
 		{name: "past uint64 count", in: "95", want: 95},
+		{name: "max", in: "1000", want: 1000},
 		{name: "empty", in: "", wantErr: ErrBadN},
 		{name: "negative", in: "-1", wantErr: ErrBadN},
 		{name: "plus", in: "+5", wantErr: ErrBadN},
@@ -42,6 +43,7 @@ func TestParseN(t *testing.T) {
 		{name: "scientific", in: "1e2", wantErr: ErrBadN},
 		{name: "letters", in: "abc", wantErr: ErrBadN},
 		{name: "leading zeros", in: "007", wantErr: ErrBadN},
+		{name: "above max", in: "1001", wantErr: ErrNTooBig},
 		{name: "overflow digits", in: "18446744073709551616", wantErr: ErrNTooBig},
 	}
 
@@ -84,6 +86,7 @@ func TestJSON(t *testing.T) {
 		{name: "five", n: 5, want: "[0,1,1,2,3]"},
 		{name: "ten", n: 10, want: "[0,1,1,2,3,5,8,13,21,34]"},
 		{name: "negative", n: -1, wantErr: ErrBadN},
+		{name: "too large", n: MaxN + 1, wantErr: ErrNTooBig},
 	}
 
 	for _, tc := range tests {
@@ -139,9 +142,7 @@ func TestJSONPastUint64(t *testing.T) {
 func TestJSONMatchesRecurrence(t *testing.T) {
 	t.Parallel()
 
-	const maxN = 120
-
-	for n := 0; n <= maxN; n++ {
+	for n := 0; n <= MaxN; n++ {
 		got, err := jsonBytes(n)
 		if err != nil {
 			t.Fatalf("JSON(%d) unexpected error: %v", n, err)

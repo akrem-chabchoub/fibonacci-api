@@ -8,24 +8,42 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/akrem-chabchoub/fibonacci-api/api"
 	"github.com/akrem-chabchoub/fibonacci-api/internal/service"
 )
 
 const contentTypeJSON = "application/json"
+
+type ErrorCode string
+
+const (
+	InvalidArgument  ErrorCode = "invalid_argument"
+	TooLarge         ErrorCode = "too_large"
+	MethodNotAllowed ErrorCode = "method_not_allowed"
+	NotFound         ErrorCode = "not_found"
+)
+
+type Error struct {
+	Code    ErrorCode `json:"code"`
+	Message string    `json:"message"`
+}
+
+type Limits struct {
+	MinN int `json:"min_n"`
+	MaxN int `json:"max_n"`
+}
 
 type Fibonacci struct{}
 
 func (h Fibonacci) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", "GET")
-		writeError(w, http.StatusMethodNotAllowed, api.InvalidArgument, "method not allowed")
+		WriteError(w, http.StatusMethodNotAllowed, MethodNotAllowed, "method not allowed")
 
 		return
 	}
 
 	if !r.URL.Query().Has("n") {
-		writeJSON(w, http.StatusOK, api.Limits{MinN: 0})
+		writeJSON(w, http.StatusOK, Limits{MinN: 0, MaxN: service.MaxN})
 
 		return
 	}
@@ -72,18 +90,25 @@ func sameETag(ifNoneMatch, etag string) bool {
 func writeServiceError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, service.ErrNTooBig):
-		writeError(w, http.StatusBadRequest, api.TooLarge, service.MsgNTooBig)
+		WriteError(w, http.StatusBadRequest, TooLarge, service.MsgNTooBig)
 	default:
-		writeError(w, http.StatusBadRequest, api.InvalidArgument, service.MsgBadN)
+		WriteError(w, http.StatusBadRequest, InvalidArgument, service.MsgBadN)
 	}
 }
 
-func writeError(w http.ResponseWriter, status int, code api.ErrorCode, message string) {
-	writeJSON(w, status, api.Error{Code: code, Message: message})
+func WriteError(w http.ResponseWriter, status int, code ErrorCode, message string) {
+	writeJSON(w, status, Error{Code: code, Message: message})
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
+	body, err := json.Marshal(v)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+
+		return
+	}
+
 	w.Header().Set("Content-Type", contentTypeJSON)
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(v)
+	_, _ = w.Write(body)
 }

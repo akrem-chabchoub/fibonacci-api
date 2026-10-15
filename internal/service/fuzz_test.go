@@ -6,7 +6,7 @@ import (
 )
 
 func FuzzParseN(f *testing.F) {
-	for _, seed := range []string{"", "0", "5", "-1", "1.5", "93", "94", "95", "999999999999", "007", "+5", "1e2"} {
+	for _, seed := range []string{"", "0", "5", "-1", "1.5", "93", "94", "95", "1000", "1001", "999999999999", "007", "+5", "1e2"} {
 		f.Add(seed)
 	}
 
@@ -20,8 +20,8 @@ func FuzzParseN(f *testing.F) {
 			return
 		}
 
-		if n < 0 {
-			t.Fatalf("ParseN(%q) = %d, want >= 0", in, n)
+		if n < 0 || n > MaxN {
+			t.Fatalf("ParseN(%q) = %d, want 0..%d", in, n, MaxN)
 		}
 	})
 }

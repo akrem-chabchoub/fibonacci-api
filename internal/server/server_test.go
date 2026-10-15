@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 )
@@ -98,5 +99,63 @@ func TestRunServesFibonacciAndShutsDown(t *testing.T) {
 		}
 	case <-time.After(2 * time.Second):
 		t.Fatal("graceful shutdown timed out")
+	}
+}
+
+func TestMuxErrorsJSON(t *testing.T) {
+	t.Parallel()
+
+	mux := newMux()
+
+	tests := []struct {
+		name       string
+		method     string
+		target     string
+		wantStatus int
+		wantBody   string
+	}{
+		{
+			name:       "post",
+			method:     http.MethodPost,
+			target:     "/v1/fibonacci?n=5",
+			wantStatus: http.StatusMethodNotAllowed,
+			wantBody:   `{"code":"method_not_allowed","message":"method not allowed"}`,
+		},
+		{
+			name:       "missing route",
+			method:     http.MethodGet,
+			target:     "/nope",
+			wantStatus: http.StatusNotFound,
+			wantBody:   `{"code":"not_found","message":"not found"}`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			rec := httptest.NewRecorder()
+			mux.ServeHTTP(rec, httptest.NewRequest(tc.method, tc.target, nil))
+
+			res := rec.Result()
+			defer func() { _ = res.Body.Close() }()
+
+			if res.StatusCode != tc.wantStatus {
+				t.Fatalf("status = %d, want %d", res.StatusCode, tc.wantStatus)
+			}
+
+			if res.Header.Get("Content-Type") != "application/json" {
+				t.Fatalf("content-type = %q", res.Header.Get("Content-Type"))
+			}
+
+			body, err := io.ReadAll(res.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if string(body) != tc.wantBody {
+				t.Fatalf("body = %s, want %s", body, tc.wantBody)
+			}
+		})
 	}
 }

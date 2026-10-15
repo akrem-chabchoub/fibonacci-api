@@ -17,8 +17,18 @@ func newMux() http.Handler {
 	router.Handler(http.MethodGet, "/readyz", http.HandlerFunc(ready))
 	router.Handler(http.MethodGet, "/openapi.yaml", http.HandlerFunc(api.ServeOpenAPI))
 	router.Handler(http.MethodGet, "/docs", http.HandlerFunc(api.ServeDocs))
+	router.MethodNotAllowed = http.HandlerFunc(methodNotAllowed)
+	router.NotFound = http.HandlerFunc(notFound)
 
 	return withCORS(router)
+}
+
+func methodNotAllowed(w http.ResponseWriter, _ *http.Request) {
+	handler.WriteError(w, http.StatusMethodNotAllowed, handler.MethodNotAllowed, "method not allowed")
+}
+
+func notFound(w http.ResponseWriter, _ *http.Request) {
+	handler.WriteError(w, http.StatusNotFound, handler.NotFound, "not found")
 }
 
 func ready(w http.ResponseWriter, _ *http.Request) {

@@ -5,8 +5,7 @@ info:
   description: |
     Returns the first n Fibonacci numbers as a JSON array of numbers.
     n is a count, not an index. n=5 is [0,1,1,2,3].
-    There is no cap on Fibonacci magnitude. n must fit in a platform int.
-    Values from F(78) are larger than JavaScript Number can hold exactly.
+    Max n is 1000 (count of numbers). F(999) is a 209-digit integer.
 servers:
   - url: /
 paths:
@@ -18,10 +17,11 @@ paths:
         - name: n
           in: query
           required: false
-          description: how many numbers to return. omit to see min_n.
+          description: how many numbers to return. omit to see min_n and max_n.
           schema:
             type: integer
             minimum: 0
+            maximum: 1000
         - name: If-None-Match
           in: header
           required: false
@@ -30,7 +30,7 @@ paths:
             type: string
       responses:
         "200":
-          description: sequence when n is set, otherwise min_n
+          description: sequence when n is set, otherwise min_n and max_n
           headers:
             ETag:
               schema:
@@ -48,7 +48,7 @@ paths:
               schema:
                 type: string
         "400":
-          description: n is missing a value, not a plain integer, or does not fit in int
+          description: n is missing a value, not a plain integer, or above 1000
           content:
             application/json:
               schema:
@@ -108,9 +108,11 @@ components:
         minimum: 0
     Limits:
       type: object
-      required: [min_n]
+      required: [min_n, max_n]
       properties:
         min_n:
+          type: integer
+        max_n:
           type: integer
     Error:
       type: object
@@ -118,6 +120,6 @@ components:
       properties:
         code:
           type: string
-          enum: [invalid_argument, too_large]
+          enum: [invalid_argument, too_large, method_not_allowed, not_found]
         message:
           type: string

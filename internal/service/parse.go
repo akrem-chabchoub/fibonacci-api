@@ -13,6 +13,10 @@ func ParseN(in string) (int, error) {
 		return 0, ErrNTooBig
 	}
 
+	if n > MaxN {
+		return 0, ErrNTooBig
+	}
+
 	return n, nil
 }
 
