@@ -4,7 +4,7 @@
 
 HTTP service that returns the first n Fibonacci numbers.
 
-`n` is a count, not an index: the body is F(0) through F(n-1). `GET /v1/fibonacci?n=5` returns `[0,1,1,2,3]`. Max `n` is 1000. Values are precomputed; F(999) is a 209-digit JSON number.
+`n` is a count, not an index: the body is F(0) through F(n-1). `GET /v1/fibonacci?n=5` returns `[0,1,1,2,3]`. Max `n` is 1000. Values are precomputed. Later numbers can be larger than JavaScript `Number` can store exactly; use a big-int JSON parser if you need the exact integer.
 
 <div align="center">
 
@@ -28,9 +28,9 @@ flowchart TB
 
 - `cmd/fibonacci-api` — flags, logger, signals, then `server.Run`
 - `internal/server` — listen, timeouts, graceful shutdown, routes
-- `internal/handler` — HTTP only: parse query, status codes
-- `internal/service` — parse `n`, table of F(0)..F(999)
-- `api` — `openapi.yaml`, generated types, `/docs`
+- `internal/handler` — Fibonacci route (`fibonacci.go`) and shared JSON errors (`json.go`)
+- `internal/service` — parse `n`, precomputed table up to max `n`
+- `api` — `openapi.yaml`, generated models, `/docs`
 
 ## contract
 

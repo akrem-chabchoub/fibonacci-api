@@ -5,7 +5,9 @@ info:
   description: |
     Returns the first n Fibonacci numbers as a JSON array of numbers.
     n is a count, not an index. n=5 is [0,1,1,2,3].
-    Max n is 1000 (count of numbers). F(999) is a 209-digit integer.
+    Max n is 1000 (count of numbers).
+    Later values can exceed what JavaScript Number stores exactly; use a big-int parser if you need the exact integer.
+    Unknown paths return {"code":"not_found","message":"not found"}.
 servers:
   - url: /
 paths:
@@ -90,6 +92,7 @@ components:
       items:
         type: integer
         minimum: 0
+        description: unbounded integer. later values are not safe in JavaScript Number.
     Limits:
       type: object
       required: [min_n, max_n]

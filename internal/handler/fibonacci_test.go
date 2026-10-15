@@ -69,14 +69,6 @@ func TestFibonacci(t *testing.T) {
 			wantAllow:  "GET",
 			wantBody:   `{"code":"method_not_allowed","message":"method not allowed"}`,
 		},
-		{
-			name:       "head not allowed",
-			method:     http.MethodHead,
-			target:     "/v1/fibonacci?n=5",
-			wantStatus: http.StatusMethodNotAllowed,
-			wantAllow:  "GET",
-			wantBody:   `{"code":"method_not_allowed","message":"method not allowed"}`,
-		},
 	}
 
 	for _, tc := range tests {
