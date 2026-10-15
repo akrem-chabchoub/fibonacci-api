@@ -24,6 +24,13 @@ flowchart TB
 
 </div>
 
+## at a glance
+
+- HTTP API, precomputed Fibonacci, max `n` 1000
+- OpenAPI at `/docs` and `/openapi.yaml`
+- CI: lint, race tests, coverage floor
+- Dependabot weekly on Go modules, GitHub Actions, and Docker
+
 ## layout
 
 - `cmd/fibonacci-api` — flags, logger, signals, then `server.Run`
