@@ -22,7 +22,6 @@ linters:
         - name: context-as-argument
         - name: error-return
         - name: error-strings
-        - name: exported
         - name: indent-error-flow
         - name: unexported-return
         - name: var-naming

@@ -9,20 +9,15 @@ import (
 )
 
 const (
-	// MsgBadN is the client-facing text when n is not a plain count.
-	MsgBadN = "n must be a non-negative integer"
-	// MsgNTooBig is the client-facing text when n does not fit in int.
+	MsgBadN    = "n must be a non-negative integer"
 	MsgNTooBig = "n exceeds maximum"
 )
 
 var (
-	// ErrBadN is returned when n cannot be parsed as a count.
-	ErrBadN = errors.New(MsgBadN)
-	// ErrNTooBig is returned when n does not fit in int.
+	ErrBadN    = errors.New(MsgBadN)
 	ErrNTooBig = errors.New(MsgNTooBig)
 )
 
-// WriteJSON writes the first n Fibonacci numbers as a JSON array of numbers.
 func WriteJSON(ctx context.Context, w io.Writer, n int) error {
 	if n < 0 {
 		return ErrBadN

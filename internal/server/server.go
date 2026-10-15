@@ -19,7 +19,6 @@ const (
 	defaultIdleTimeout       = 60 * time.Second
 )
 
-// Options configure the HTTP server.
 type Options struct {
 	Addr              string
 	ShutdownTimeout   time.Duration
@@ -30,7 +29,6 @@ type Options struct {
 	Logger            *zap.Logger
 }
 
-// Server is the process HTTP listener.
 type Server struct {
 	http            *http.Server
 	log             *zap.Logger
@@ -40,7 +38,6 @@ type Server struct {
 	started         chan struct{}
 }
 
-// New builds a server that is not listening yet.
 func New(opts Options) *Server {
 	if opts.Logger == nil {
 		opts.Logger = zap.NewNop()

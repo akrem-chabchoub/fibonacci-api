@@ -14,10 +14,8 @@ import (
 
 const contentTypeJSON = "application/json"
 
-// Fibonacci serves GET /v1/fibonacci.
 type Fibonacci struct{}
 
-// ServeHTTP handles the Fibonacci HTTP API.
 func (h Fibonacci) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", "GET")
