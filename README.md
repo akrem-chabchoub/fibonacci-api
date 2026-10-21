@@ -4,7 +4,7 @@
 
 HTTP service that returns the first n Fibonacci numbers.
 
-`n` is a count, not an index: the body is F(0) through F(n-1). `GET /v1/fibonacci?n=5` returns `[0,1,1,2,3]`. Max `n` is 1000. Values are precomputed. Later numbers can be larger than JavaScript `Number` can store exactly; use a big-int JSON parser if you need the exact integer.
+`n` is a count, not an index: the body is F(0) through F(n-1). `GET /v1/fibonacci?n=5` returns `[0,1,1,2,3]`. Max `n` is 10000. Values are precomputed. Later numbers can be larger than JavaScript `Number` can store exactly; use a big-int JSON parser if you need the exact integer.
 
 <div align="center">
 
@@ -16,7 +16,7 @@ flowchart TB
 
   mux --> handler[handler]
   handler --> service[service]
-  service --> json([precomputed decimals])
+  service --> json([precomputed json])
 
   mux -.-> health[healthz and readyz]
   mux -.-> docs[docs and openapi]
@@ -26,7 +26,7 @@ flowchart TB
 
 ## at a glance
 
-- HTTP API, precomputed Fibonacci, max `n` 1000
+- HTTP API, precomputed Fibonacci, max `n` 10000
 - OpenAPI at `/docs` and `/openapi.yaml`
 - CI: lint, race tests, coverage floor
 - Dependabot weekly on Go modules, GitHub Actions, and Docker
@@ -36,7 +36,7 @@ flowchart TB
 - `cmd/fibonacci-api` — flags, logger, signals, then `server.Run`
 - `internal/server` — listen, timeouts, graceful shutdown, routes
 - `internal/handler` — Fibonacci route (`fibonacci.go`) and shared JSON errors (`json.go`)
-- `internal/service` — parse `n`, precomputed table up to max `n`
+- `internal/service` — parse `n`, precomputed JSON up to max `n`
 - `api` — `openapi.yaml`, generated models, `/docs`
 
 ## contract
@@ -44,13 +44,13 @@ flowchart TB
 Errors are always `{"code","message"}`:
 
 - `invalid_argument` — empty, negative, leading zeros, `+5`, floats, junk
-- `too_large` — above 1000, or a number that does not fit in `int`
+- `too_large` — above 10000, or a number that does not fit in `int`
 - `method_not_allowed` — not GET
 - `not_found` — unknown path
 
 Same `n` always yields the same bytes.
 
-Omit `n` to get `{"min_n":0,"max_n":1000}`.
+Omit `n` to get `{"min_n":0,"max_n":10000}`.
 
 CORS is `*` (no credentials). Methods: GET, OPTIONS.
 

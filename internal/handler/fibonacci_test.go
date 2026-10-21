@@ -2,10 +2,13 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/akrem-chabchoub/fibonacci-api/internal/service"
 )
 
 func TestFibonacci(t *testing.T) {
@@ -51,7 +54,7 @@ func TestFibonacci(t *testing.T) {
 		{
 			name:       "too large",
 			method:     http.MethodGet,
-			target:     "/v1/fibonacci?n=1001",
+			target:     fmt.Sprintf("/v1/fibonacci?n=%d", service.MaxN+1),
 			wantStatus: http.StatusBadRequest,
 			wantBody:   `{"code":"too_large","message":"n exceeds maximum"}`,
 		},
@@ -109,7 +112,7 @@ func TestFibonacci(t *testing.T) {
 				if err := json.Unmarshal(body, &got); err != nil {
 					t.Fatal(err)
 				}
-				if got.MinN != 0 || got.MaxN != 1000 {
+				if got.MinN != 0 || got.MaxN != service.MaxN {
 					t.Fatalf("limits = %+v", got)
 				}
 			}

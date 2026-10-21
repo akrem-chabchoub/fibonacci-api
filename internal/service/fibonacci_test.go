@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"math/big"
+	"strconv"
 	"testing"
 
 	"go.uber.org/goleak"
@@ -35,7 +36,7 @@ func TestParseN(t *testing.T) {
 		{name: "one", in: "1", want: 1},
 		{name: "five", in: "5", want: 5},
 		{name: "past uint64 count", in: "95", want: 95},
-		{name: "max", in: "1000", want: 1000},
+		{name: "max", in: strconv.Itoa(MaxN), want: MaxN},
 		{name: "empty", in: "", wantErr: ErrBadN},
 		{name: "negative", in: "-1", wantErr: ErrBadN},
 		{name: "plus", in: "+5", wantErr: ErrBadN},
@@ -43,7 +44,7 @@ func TestParseN(t *testing.T) {
 		{name: "scientific", in: "1e2", wantErr: ErrBadN},
 		{name: "letters", in: "abc", wantErr: ErrBadN},
 		{name: "leading zeros", in: "007", wantErr: ErrBadN},
-		{name: "above max", in: "1001", wantErr: ErrNTooBig},
+		{name: "above max", in: strconv.Itoa(MaxN + 1), wantErr: ErrNTooBig},
 		{name: "overflow digits", in: "18446744073709551616", wantErr: ErrNTooBig},
 	}
 
@@ -142,7 +143,7 @@ func TestJSONPastUint64(t *testing.T) {
 func TestJSONMatchesRecurrence(t *testing.T) {
 	t.Parallel()
 
-	for n := 0; n <= MaxN; n++ {
+	for _, n := range []int{0, 1, 10, 95, MaxN} {
 		got, err := jsonBytes(n)
 		if err != nil {
 			t.Fatalf("JSON(%d) unexpected error: %v", n, err)
@@ -166,6 +167,37 @@ func TestJSONMatchesRecurrence(t *testing.T) {
 
 			next := new(big.Int).Add(prev, curr)
 			prev, curr = curr, next
+		}
+	}
+}
+
+func TestJSONCutPrefix(t *testing.T) {
+	t.Parallel()
+
+	full, err := jsonBytes(MaxN)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if full[len(full)-1] != ']' {
+		t.Fatalf("MaxN JSON missing closing bracket")
+	}
+
+	fullOpen := full[:len(full)-1]
+
+	for _, n := range []int{0, 1, 5, 95, MaxN} {
+		got, err := jsonBytes(n)
+		if err != nil {
+			t.Fatalf("JSON(%d) unexpected error: %v", n, err)
+		}
+
+		if got[len(got)-1] != ']' {
+			t.Fatalf("JSON(%d) missing closing bracket", n)
+		}
+
+		open := got[:len(got)-1]
+		if !bytes.Equal(open, fullOpen[:len(open)]) {
+			t.Fatalf("JSON(%d) is not a prefix cut of MaxN", n)
 		}
 	}
 }

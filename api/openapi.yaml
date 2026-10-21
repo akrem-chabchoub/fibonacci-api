@@ -5,7 +5,7 @@ info:
   description: |
     Returns the first n Fibonacci numbers as a JSON array of numbers.
     n is a count, not an index. n=5 is [0,1,1,2,3].
-    Max n is 1000 (count of numbers).
+    Max n is 10000 (count of numbers).
     Later values can exceed what JavaScript Number stores exactly; use a big-int parser if you need the exact integer.
     Unknown paths return {"code":"not_found","message":"not found"}.
 servers:
@@ -23,7 +23,7 @@ paths:
           schema:
             type: integer
             minimum: 0
-            maximum: 1000
+            maximum: 10000
       responses:
         "200":
           description: sequence when n is set, otherwise min_n and max_n
@@ -34,7 +34,7 @@ paths:
                   - $ref: "#/components/schemas/Sequence"
                   - $ref: "#/components/schemas/Limits"
         "400":
-          description: n is missing a value, not a plain integer, or above 1000
+          description: n is missing a value, not a plain integer, or above 10000
           content:
             application/json:
               schema:
